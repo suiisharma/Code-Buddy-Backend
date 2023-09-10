@@ -42,5 +42,5 @@ const port = process.env.PORT || 5000;
 
 app.listen(port, () => {
     console.log(`Server running on port ${port} 🔥`);
-    console.log(`Frontend at ${process.env.FRONTEND_URL}`);
+    console.log(`Frontend at ${process.env.FRONTEND_URL} 🚀`);
 });

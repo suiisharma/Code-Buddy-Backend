@@ -7,24 +7,41 @@ const signup = async (req, res) => {
     try {
         let { first_name, last_name, email, password, skills } = req.body
         const salt = await bcrypt.genSalt()
-        if (password && first_name && last_name && email) {
+        if (password && first_name && email) {
             const encryptedPassWord = await bcrypt.hash(password, salt)
-            let tempUser = await User.create({
-                first_name,
-                last_name,
-                email,
-                password: encryptedPassWord,
-                skills
-            })
-            const jwt = jwt.sign({id:tempUser._id},process.env.JWT_SECRET,{expiresIn:"1h"})
-            const link = `${process.env.BACKEND_URL}/verify/${jwt}`
+            let nonVerifiedUserWithSameMail = await User.findOne({email})
+            if(nonVerifiedUserWithSameMail.isVerified===true){
+                return res.status(400).json({msg:"User already exists"})
+            }
+            let jwtToken="", link=""
+            if(!nonVerifiedUserWithSameMail){
+                let tempUser = await User.create({
+                    first_name,
+                    last_name,
+                    email,
+                    password: encryptedPassWord,
+                    skills
+                })
+                jwtToken = jwt.sign({id:tempUser._id},process.env.JWT_SECRET,{expiresIn:"1h"})
+            }
+            else{
+                nonVerifiedUserWithSameMail.first_name = first_name
+                nonVerifiedUserWithSameMail.last_name = last_name
+                nonVerifiedUserWithSameMail.password = encryptedPassWord
+                nonVerifiedUserWithSameMail.skills = skills
+                await nonVerifiedUserWithSameMail.save()
+                jwtToken = jwt.sign({id:nonVerifiedUserWithSameMail._id},process.env.JWT_SECRET,{expiresIn:"1h"})
+            }
+            link = `${process.env.BACKEND_URL}/verify/${jwtToken}`
             const transporter = nodemailer.createTransport({
                 service: "gmail",
                 auth: {
                   user: `${process.env.EMAIL_ID}`,
                   pass: `${process.env.EMAIL_PASSWORD}`,
                 },
+                from : `${process.env.EMAIL_ID}`
               });
+              console.log({link})
             const htmlContent = `
             <!DOCTYPE html>
             <html lang="en">
@@ -78,6 +95,9 @@ const signup = async (req, res) => {
                 text-align: center;
                 color: #777;
                 }
+                a{
+                    cursor : "pointer";
+                }
             </style>
             </head>
             <body>
@@ -87,7 +107,7 @@ const signup = async (req, res) => {
                 <p>Hello,</p>
                 <p>Please click the button below to verify your email address:</p>
                 <div class="button-container">
-                    <a href="${link}" class="button">Verify Email</a>
+                    <a href=${link} class="button">Verify Email</a>
                 </div>
                 <p>If you did not create an account on our website, you can ignore this email.</p>
                 </div>
@@ -103,6 +123,7 @@ const signup = async (req, res) => {
                 from: `${process.env.EMAIL_ID}`,
                 to: email,
                 subject: "Verify Your Account On CodeBuddy",
+                text : "Hello, this email is for your email verfication",
                 html: htmlContent,
             };
             transporter.sendMail(mailOptions, (error, info) => {
@@ -124,14 +145,23 @@ const signup = async (req, res) => {
 
 const validateUser = async(req,res)=>{
     try {
-        if (!req.params.Token) {
-            return res.render('InvalidVerification',{link:process.env.frontend_url})
+        let user_id = req.params.Token
+        if(!user_id){
+            return res.render('InvalidVerification',{link:process.env.FRONTEND_URL})
         }
         let {id} = jwt.verify(user_id,process.env.JWT_SECRET)
-        console.log({id})
-        return res.status(200).json({msg:"Checking"})
+        let nonVerifiedUser = await User.findOne({_id:id})
+        if(!nonVerifiedUser){
+            return res.status(404).json({msg : "User doesn't exist"})
+        }
+        if(nonVerifiedUser.isVerified){
+            return res.status(400).json({msg:"User already exists"})
+        }
+        nonVerifiedUser.isVerified = true
+        await nonVerifiedUser.save()
+        return res.status(200).json({msg:"User Verified"})
     } catch (error) {
-        return res.status(500).json({})
+        return res.status(500).json({error})
     }
 }
 

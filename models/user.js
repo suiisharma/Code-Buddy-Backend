@@ -9,7 +9,6 @@ const userSchema = new mongoose.Schema({
         },
         last_name : {
             type : String,
-            min: 0,
             max : 30,
             default : ""
         },
@@ -38,11 +37,13 @@ const userSchema = new mongoose.Schema({
         },
         communities_joined : {
             type : Array,
-            default : []
+            default : [],
+            required: false
         },
         skills : {
             type : Array,
-            default : []
+            default : [],
+            required: false
         }
     },
     {timestamps : true}

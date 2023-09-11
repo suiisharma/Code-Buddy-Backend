@@ -26,12 +26,9 @@ app.use(cors({
     credentials: true,
 }));
 
+// Routes
 app.use("/",router)
 
-// Routes
-app.get('/', (req, res) => {
-    res.send("Hello Welcome to the backend of the CodeBuddy App😊");
-});
 
 
 

@@ -7,7 +7,7 @@ const signup = async (req, res) => {
     try {
         let { first_name, last_name, email, password, skills } = req.body
         const salt = await bcrypt.genSalt()
-        if (password && first_name && last_name && email) {
+        if (password && first_name  && email) {
             const encryptedPassWord = await bcrypt.hash(password, salt)
             let tempUser = await User.create({
                 first_name,
@@ -16,8 +16,8 @@ const signup = async (req, res) => {
                 password: encryptedPassWord,
                 skills
             })
-            const jwt = jwt.sign({id:tempUser._id},process.env.JWT_SECRET,{expiresIn:"1h"})
-            const link = `${process.env.BACKEND_URL}/verify/${jwt}`
+            const jwtToken = jwt.sign({id:tempUser._id},process.env.JWT_SECRET,{expiresIn:"1h"})
+            const link = `${process.env.BACKEND_URL}/verify/${jwtToken}`
             const transporter = nodemailer.createTransport({
                 service: "gmail",
                 auth: {

@@ -10,7 +10,7 @@ const signup = async (req, res) => {
         if (password && first_name && email) {
             const encryptedPassWord = await bcrypt.hash(password, salt)
             let nonVerifiedUserWithSameMail = await User.findOne({email})
-            if(nonVerifiedUserWithSameMail.isVerified===true){
+            if(nonVerifiedUserWithSameMail?.isVerified===true){
                 return res.status(400).json({msg:"User already exists"})
             }
             let jwtToken="", link=""
@@ -41,7 +41,7 @@ const signup = async (req, res) => {
                 },
                 from : `${process.env.EMAIL_ID}`
               });
-              console.log({link})
+            //   console.log({link})
             const htmlContent = `
             <!DOCTYPE html>
             <html lang="en">

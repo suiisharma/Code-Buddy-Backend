@@ -3,11 +3,23 @@ import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
 import nodemailer from "nodemailer"
 
+// Strong password regex
+
+export const isPasswordStrong = (password) => {
+    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    return strongPasswordRegex.test(password);
+  };
+
+//Signup
+
 export const signup = async (req, res) => {
     try {
         let { first_name, last_name, email, password, skills } = req.body
     const salt = await bcrypt.genSalt(10)
         if (password && first_name && email) {
+            if(!isPasswordStrong(password)){
+                return Response(res,400,false,"Weak Password!")
+               }
             const encryptedPassWord = await bcrypt.hash(password, salt)
             let tempUser = await User.create({
                 first_name,
@@ -321,6 +333,7 @@ export const changePass = async (req, res) => {
         if (!user) {
             return res.status(404).json({ msg: "User doesn't exist!" })
         }
+        
         return res.status(200).json({ msg: "Password changed succsessfully!" })
     } catch (error) {
         return res.status(500).json({ msg: error.message })
@@ -338,6 +351,9 @@ export const resetPassword = async (req, res) => {
         if (!isMatch) {
             return res.status(400).json({ msg: "Invalid Credentials!" });
         }
+        if(!isPasswordStrong(newPassword)){
+            return Response(res,400,false,"Weak Password!")
+           }
         user.password = encryptedPassWord;
         await user.save();
         return res.status(200).json({ msg: "Password Changed Successfully!" });

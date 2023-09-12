@@ -1,6 +1,6 @@
 import express from "express";
 import { changePass, forgotPassword, login, logout, resetPassword, signup, validateUser } from "../controllers/auth.js";
-import IsAuthenticated from './../middleware/TokenKepper.js';
+import IsAuthenticated from './../middleware/tokenService.js';
 
 
 const router = express.Router()

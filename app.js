@@ -4,7 +4,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
-import router from './routes/userRoutes.js';
+import userRouter from './routes/userRoutes.js';
 
 const app = express();
 
@@ -27,7 +27,7 @@ app.use(cors({
 }));
 
 // Routes
-app.use("/",router)
+app.use("/",userRouter)
 
 
 

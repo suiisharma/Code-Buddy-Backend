@@ -289,7 +289,7 @@ export const forgotPassword = async (req, res) => {
          <p>Hello,</p>
          <p>Please click the button below to reset your password:</p>
          <div class="button-container">
-             <a href=${link} class="button">Verify Email</a>
+             <a href=${link} class="button">Reset Password</a>
          </div>
          <p>If you did not create an account on our website, you can ignore this email.</p>
          </div>
@@ -325,6 +325,7 @@ export const forgotPassword = async (req, res) => {
 export const changePass = async (req, res) => {
     try {
         let user_id = req.params.Token
+        const { password} = req.body;
         if (!user_id) {
             return res.render('InvalidForgotReq', { link: process.env.FRONTEND_URL })
         }
@@ -333,7 +334,12 @@ export const changePass = async (req, res) => {
         if (!user) {
             return res.status(404).json({ msg: "User doesn't exist!" })
         }
-        
+        if(!isPasswordStrong(password)){
+            return Response(res,400,false,"Weak Password!")
+           }
+        if(!password){
+            return res.render('passChange', { link: process.env.FRONTEND_URL })
+        }
         return res.status(200).json({ msg: "Password changed succsessfully!" })
     } catch (error) {
         return res.status(500).json({ msg: error.message })

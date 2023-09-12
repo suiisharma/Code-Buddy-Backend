@@ -25,7 +25,8 @@ app.use(cors({
     methods: ["GET", "POST", "DELETE", "PUT"],
     credentials: true,
 }));
-
+app.set('view engine','ejs');
+res.set('Content-Type', 'text/html');
 // Routes
 app.use("/",userRouter)
 

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Password</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #ffffffd4;
+        }
+
+        .reset-form {
+            width: 300px;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 4px 10px 10px 4px rgba(0, 0, 0, 0.1);
+            border-radius: .5rem;
+        }
+
+        .reset-form input[type="password"] {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            box-sizing: border-box;
+            border: none;
+            outline: none;
+            border-bottom: 1px solid lightgray;
+        }
+
+        .reset-form button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 20px;
+            margin: 10px 0;
+            margin-top: 50px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="reset-form">
+        <h2>Reset Password</h2>
+        <form action="/submit_new_password" method="post">
+            <label for="new-password">New Password:</label><br>
+            <input type="password" id="new-password" name="new-password"><br>
+            <label for="confirm-password">Confirm New Password:</label><br>
+            <input type="password" id="confirm-password" name="confirm-password"><br>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+    <script>
+        const isPasswordStrong = (password) => {
+            const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+            return strongPasswordRegex.test(password);
+        };
+        const newPassword = document.getElementById("new-password");
+        const confirmPassword = document.getElementById("confirm-password");
+        const submitButton = document.querySelector("button");
+        submitButton.addEventListener("click", (e) => {
+            if (newPassword.value !== confirmPassword.value) {
+                e.preventDefault();
+                alert("Passwords doesn't not match!");
+            }
+            if (!isPasswordStrong(newPassword.value)) {
+                e.preventDefault();
+                alert("Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number!");
+            }
+            fetch('/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ password: newPassword.value }),
+            })
+                .then(response => response.json())
+                .then(data => console.log('Success:', data))
+                .catch((error) => console.error('Error:', error));
+        });
+
+    </script>
+</body>
+
+</html>

@@ -1,5 +1,5 @@
 import express from "express";
-import { changePass, forgotPassword, login, logout, resetPassword, signup, validateUser } from "../controllers/auth.js";
+import { RediectToChangePass, changePass, forgotPassword, login, logout, resetPassword, signup, validateUser } from "../controllers/auth.js";
 import IsAuthenticated from './../middleware/tokenService.js';
 
 
@@ -17,8 +17,8 @@ router.route("/auth/logout").get(IsAuthenticated,logout)
 
 // Forgot Password
 router.route("/auth/forgotPassword").post(forgotPassword)
-router.route("/forgotPass/:Token").get(changePass)
-
+router.route("/forgotPass/:Token").get(RediectToChangePass)
+router.route("/auth/changePass").post(changePass)
 // Reset Password
 router.route("/auth/resetPass").post(IsAuthenticated,resetPassword)
 

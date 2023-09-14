@@ -2,7 +2,8 @@ import User from "../models/user.js"
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
 import nodemailer from "nodemailer"
-
+import { getStorage, ref, getDownloadURL, uploadBytesResumable, deleteObject } from "firebase/storage"
+import {v4} from "uuid"
 // Strong password regex
 
 export const isPasswordStrong = (password) => {
@@ -15,7 +16,7 @@ export const isPasswordStrong = (password) => {
 export const signup = async (req, res) => {
     try {
         let { first_name, last_name, email, password, skills } = req.body
-    const salt = await bcrypt.genSalt(10)
+        const salt = await bcrypt.genSalt(10)
         if (password && first_name && email) {
             if(!isPasswordStrong(password)){
                 return Response(res,400,false,"Weak Password!")
@@ -155,14 +156,13 @@ export const validateUser = async (req, res) => {
             return res.status(400).json({ msg: "User already exists" })
         }
         nonVerifiedUser.isVerified = true
+        nonVerifiedUser.username = v4()
         await nonVerifiedUser.save()
         return res.status(200).json({ msg: "User Verified" })
     } catch (error) {
-        return res.status(500).json({ error })
+        return res.status(500).json({ error : error.message})
     }
 }
-
-
 
 //Login
 export const login = async (req, res) => {
@@ -362,3 +362,68 @@ export const resetPassword = async (req, res) => {
     }
 }
 
+
+export const setProfile = async(req,res)=>{
+    try {
+        const user = req.user
+        const time = new Date().getTime();
+        const storage = getStorage()
+        const allowed_formats = ['image/png','image/jpeg']
+        if(req.files){
+            //profile_image
+            if(req.files['profile_image']){
+                if(!allowed_formats.includes(req.files['profile_image'][0].mimetype)){
+                    return res.status(400).json({msg : "Only jpeg, jpg, png files are allowed"})
+                }
+            }
+            if(req.files['profile_background']){
+                if(!allowed_formats.includes(req.files['profile_background'][0].mimetype)){
+                    return res.status(400).json({msg : "Only jpeg, jpg, png files are allowed"})
+                }
+            }
+            if(req.files['profile_image']){
+                if(user.profile_image!==""){
+                    const fileRef = ref(storage, user.profile_image);
+                    await deleteObject(fileRef)
+                }
+                const profile_image_storageRef = ref(storage, `profile_images/${req.files['profile_image'][0].originalname + "  " + time}`);
+                const profile_image_metadata = {
+                    contentType: req.files['profile_image'][0].mimetype,
+                };
+                const snapshot = await uploadBytesResumable(profile_image_storageRef, req.files['profile_image'][0].buffer, profile_image_metadata);
+                const profile_image_downloadURL = await getDownloadURL(snapshot.ref);
+                user.profile_image = profile_image_downloadURL
+            }
+            //profile_background
+            if(req.files['profile_background']){
+                if(user.profile_background!==""){
+                    const fileRef = ref(storage, user.profile_background);
+                    await deleteObject(fileRef)
+                }
+                const profile_background_storageRef = ref(storage,`profile_background/${req.files['profile_background'][0].originalname+"  "+time}`);
+                const profile_background_metadata = {
+                    contentType: req.files['profile_background'][0].mimetype,
+                }
+                const snapshot_background = await uploadBytesResumable(profile_background_storageRef, req.files['profile_background'][0].buffer, profile_background_metadata);
+                user.profile_background = await getDownloadURL(snapshot_background.ref);
+            }
+        }   
+        let {first_name, last_name, skills} = req.body
+        //first_name
+        if(first_name){
+            user.first_name = first_name
+        }
+        //last_name
+        if(last_name){
+            user.last_name = last_name
+        }
+        //skills
+        if(skills){
+            user.skills = skills.split(' , ')
+        }
+        await user.save()
+        return res.status(201).json({msg : "Profile Updated"})
+    } catch (error) {
+        return res.status(500).json({msg: error.message})
+    }
+}

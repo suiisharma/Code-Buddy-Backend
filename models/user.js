@@ -34,6 +34,10 @@ const userSchema = new mongoose.Schema({
             type : Boolean,
             default : false
         },
+        username : {
+            type : String,
+            default : ""
+        },
         communities_joined : {
             type : Array,
             default : [],

@@ -13,7 +13,7 @@ const IsAuthenticated=async(req,res,next)=>{
         const decodeData=jwt.verify(Token,process.env.JWT_SECRET);
         const user= await User.findById({_id:decodeData.id});
         if(!user){
-        return res.status(400).json({msg:'Some error occured !'})
+            return res.status(400).json({msg:'Some error occured !'})
         }
         if(user.isVerified===false){
             return res.status(401).json({msg:'Verify your email first!'})

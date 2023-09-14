@@ -1,25 +1,34 @@
 import express from "express";
-import { changePass, forgotPassword, login, logout, resetPassword, signup, validateUser } from "../controllers/auth.js";
+import { changePass, forgotPassword, login, logout, resetPassword, setProfile, signup, validateUser } from "../controllers/auth.js";
 import IsAuthenticated from './../middleware/tokenService.js';
+import multer from 'multer'
+import firebase from "../firebase/config.js"
+import {getStorage, ref, getDownloadURL, uploadBytesResumable} from "firebase/storage";
+const storage = getStorage()
 
-
+const upload = multer({ storage: multer.memoryStorage() })
 const router = express.Router()
 
 // Signup
-router.route("/auth/signup").post(signup)
+router.route("/signup").post(signup)
 router.route("/verify/:Token").get(validateUser)
 
 // Login
-router.route("/auth/login").post(login)
+router.route("/login").post(login)
 
 // Logout
-router.route("/auth/logout").get(IsAuthenticated,logout)
+router.route("/logout").get(IsAuthenticated,logout)
 
 // Forgot Password
-router.route("/auth/forgotPassword").post(forgotPassword)
+router.route("/forgotPassword").post(forgotPassword)
 router.route("/forgotPass/:Token").get(changePass)
 
 // Reset Password
-router.route("/auth/resetPass").post(IsAuthenticated,resetPassword)
+router.route("/resetPass").post(IsAuthenticated,resetPassword)
+
+//profile
+router.route("/profile").put(IsAuthenticated,
+    upload.fields([{ name: 'profile_image', maxCount: 1 }, { name: 'profile_background', maxCount: 1 }]),
+    setProfile)
 
 export default router

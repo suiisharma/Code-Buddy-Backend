@@ -19,7 +19,7 @@ export const signup = async (req, res) => {
         const salt = await bcrypt.genSalt(10)
         if (password && first_name && email) {
             if(!isPasswordStrong(password)){
-                return Response(res,400,false,"Weak Password!")
+                return res.status(400).json({msg:"Weak Password!"})
                }
             const encryptedPassWord = await bcrypt.hash(password, salt)
             let tempUser = await User.create({
@@ -289,7 +289,7 @@ export const forgotPassword = async (req, res) => {
          <p>Hello,</p>
          <p>Please click the button below to reset your password:</p>
          <div class="button-container">
-             <a href=${link} class="button">Verify Email</a>
+             <a href=${link} class="button">Reset Password</a>
          </div>
          <p>If you did not create an account on our website, you can ignore this email.</p>
          </div>
@@ -322,7 +322,7 @@ export const forgotPassword = async (req, res) => {
 }
 
 // Change Password
-export const changePass = async (req, res) => {
+export const RediectToChangePass = async (req, res) => {
     try {
         let user_id = req.params.Token
         if (!user_id) {
@@ -333,10 +333,33 @@ export const changePass = async (req, res) => {
         if (!user) {
             return res.status(404).json({ msg: "User doesn't exist!" })
         }
-        
-        return res.status(200).json({ msg: "Password changed succsessfully!" })
+        return res.redirect(`${process.env.FRONTEND_URL}/resetPass?Token=${user_id}`)
     } catch (error) {
-        return res.status(500).json({ msg: error.message })
+        return res.status(500).json({ msg: error.message });
+    }
+}
+
+export const changePass=async(req,res)=>{
+    try {
+        let {user_id,newPassword}=req.body
+        if (!user_id) {
+            return res.render('InvalidForgotReq', { link: process.env.FRONTEND_URL })
+        }
+        let { id } = jwt.verify(user_id, process.env.JWT_SECRET)
+        let user = await User.findOne({ _id: id })
+        if (!user) {
+            return res.status(404).json({ msg: "User doesn't exist!" })
+        }
+        if(!isPasswordStrong(newPassword)){
+            return res.status(400).json({msg:"Weak Password!"})
+           }
+        const salt = await bcrypt.genSalt(10);
+        const encryptedPassWord=await bcrypt.hash(newPassword,salt);
+        user.password=encryptedPassWord
+        await user.save()
+        return res.status(200).json({msg:"Password Changed Successfully!"})
+    } catch (error) {
+        return res.status(500).json({ msg: error.message });
     }
 }
 
@@ -351,8 +374,8 @@ export const resetPassword = async (req, res) => {
         if (!isMatch) {
             return res.status(400).json({ msg: "Invalid Credentials!" });
         }
-        if(!isPasswordStrong(newPassword)){
-            return Response(res,400,false,"Weak Password!")
+        if(!isPasswordStrong(password)){
+            return res.status(400).json({msg:"Weak Password!"})
            }
         user.password = encryptedPassWord;
         await user.save();

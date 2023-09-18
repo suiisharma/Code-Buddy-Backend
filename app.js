@@ -5,6 +5,10 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
 import userRouter from './routes/userRoutes.js';
+import postRouter from "./routes/postsRoutes.js"
+import commentRouter from "./routes/commentRoutes.js"
+import messageRouter from "./models/messagesRouter.js"
+import communitiesRouter from './routes/communitiesRouter.js';
 
 const app = express();
 
@@ -29,10 +33,10 @@ app.use(cors({
 app.set('view engine','ejs');
 // Routes
 app.use("/auth",userRouter)
-
-
-
-
+app.use("/posts",postRouter)
+app.use("/comments",commentRouter)
+app.use("/communities",communitiesRouter)
+app.use("/messages",messageRouter)
 // Defining port
 const port = process.env.PORT ;
 

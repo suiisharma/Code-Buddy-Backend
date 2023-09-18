@@ -13,6 +13,10 @@ const CommentSchema = new mongoose.Schema({
         description : {
             type : String,
             required : true
+        },
+        commented_by : {
+            type : String,
+            required : true
         }
     },
     {timestamps : true}

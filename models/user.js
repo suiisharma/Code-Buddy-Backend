@@ -38,11 +38,6 @@ const userSchema = new mongoose.Schema({
             type : String,
             default : ""
         },
-        communities_joined : {
-            type : Array,
-            default : [],
-            required: false
-        },
         skills : {
             type : Array,
             default : [],

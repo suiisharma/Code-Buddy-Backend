@@ -1,5 +1,5 @@
-import Messages from "../models/messages"
-import Users from "../models/user"
+import Messages from "../models/messages.js"
+import Users from "../models/user.js"
 import { getStorage, ref, getDownloadURL, uploadBytesResumable, deleteObject } from "firebase/storage"
 
 const storage = getStorage()

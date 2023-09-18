@@ -24,3 +24,5 @@ router.route("/").put(IsAuthenticated,joinCommunity)
 
 //leave community
 router.route("/").put(IsAuthenticated,leaveCommunity)
+
+export default router

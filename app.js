@@ -7,7 +7,7 @@ import mongoose from 'mongoose';
 import userRouter from './routes/userRoutes.js';
 import postRouter from "./routes/postsRoutes.js"
 import commentRouter from "./routes/commentRoutes.js"
-import messageRouter from "./models/messagesRouter.js"
+import messageRouter from "./routes/messagesRouter.js"
 import communitiesRouter from './routes/communitiesRouter.js';
 
 const app = express();
